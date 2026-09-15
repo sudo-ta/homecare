@@ -3,13 +3,21 @@ import { Link, NavLink, useLocation } from 'react-router';
 import { brand, telHref } from '@shared/brand.js';
 import { cn } from '@shared/utils/index.js';
 
+/**
+ * Services and the care team are sections of the home page, not routes of
+ * their own, so the nav points at anchors. /services and /professionals still
+ * exist as fuller pages and are reached from the section headings and the
+ * footer, which is the sitemap.
+ */
 const NAV = [
-  { to: '/services', label: 'Services' },
-  { to: '/professionals', label: 'Our care team' },
+  { to: '/#services', label: 'Services' },
+  { to: '/#team', label: 'Our care team' },
   { to: '/coverage', label: 'Areas served' },
   { to: '/blog', label: 'Articles' },
   { to: '/contact', label: 'Contact' },
 ];
+
+const isAnchor = (to: string) => to.includes('#');
 
 /**
  * The floating glass header.
@@ -73,18 +81,27 @@ export function Header() {
           <ul className="flex items-center gap-3.75 whitespace-nowrap">
             {NAV.map((item) => (
               <li key={item.to} className="inline-flex items-center">
-                <NavLink
-                  to={item.to}
-                  className={({ isActive }) =>
-                    cn(
-                      'text-small whitespace-nowrap no-underline',
-                      'transition-colors duration-(--dur-state) ease-state hover:text-accent',
-                      isActive ? 'font-medium text-blue' : 'text-pewter-text',
-                    )
-                  }
-                >
-                  {item.label}
-                </NavLink>
+                {isAnchor(item.to) ? (
+                  <Link
+                    to={item.to}
+                    className="text-small whitespace-nowrap text-pewter-text no-underline transition-colors duration-(--dur-state) ease-state hover:text-accent"
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <NavLink
+                    to={item.to}
+                    className={({ isActive }) =>
+                      cn(
+                        'text-small whitespace-nowrap no-underline',
+                        'transition-colors duration-(--dur-state) ease-state hover:text-accent',
+                        isActive ? 'font-medium text-blue' : 'text-pewter-text',
+                      )
+                    }
+                  >
+                    {item.label}
+                  </NavLink>
+                )}
               </li>
             ))}
           </ul>
@@ -160,17 +177,26 @@ export function Header() {
           <ul className="flex flex-col px-(--page-gutter) py-2">
             {NAV.map((item) => (
               <li key={item.to}>
-                <NavLink
-                  to={item.to}
-                  className={({ isActive }) =>
-                    cn(
-                      'flex min-h-7 items-center border-b border-line text-body-lg no-underline',
-                      isActive ? 'font-medium text-blue' : 'text-ink',
-                    )
-                  }
-                >
-                  {item.label}
-                </NavLink>
+                {isAnchor(item.to) ? (
+                  <Link
+                    to={item.to}
+                    className="flex min-h-7 items-center border-b border-line text-body-lg text-ink no-underline"
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <NavLink
+                    to={item.to}
+                    className={({ isActive }) =>
+                      cn(
+                        'flex min-h-7 items-center border-b border-line text-body-lg no-underline',
+                        isActive ? 'font-medium text-blue' : 'text-ink',
+                      )
+                    }
+                  >
+                    {item.label}
+                  </NavLink>
+                )}
               </li>
             ))}
             <li>
