@@ -1,0 +1,803 @@
+/* ---------------------------------------------------------------------------
+ * Design tokens. The single source of truth for the visual system.
+ *
+ * Imported from the "Website design framework" Claude Design project
+ * (Home Care Site.dc.html), second revision. That revision was rebuilt against
+ * this codebase - it carries our palette, our content and our motion rules -
+ * and changes the visual direction rather than the palette:
+ *
+ *   - A blue gradient hero, full bleed, resolving to white at its base.
+ *   - A floating glass header: a pill, inset from the edges, over a blur.
+ *   - Rounded again. 24px on service cards, 8px on people, 9999px on every
+ *     button, 40px on the coverage panel's top corners.
+ *   - Prices set large in the display face rather than in the body face.
+ *
+ * The stock Tailwind palette, radius, weight and type scales are cleared to
+ * `initial` on purpose. `bg-blue-500`, `rounded-lg` and `font-bold` do not
+ * exist here - referencing one produces no class at all rather than a quiet
+ * drift away from the system.
+ * ------------------------------------------------------------------------- */
+
+@theme {
+  /* --- colour ------------------------------------------------------------ */
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-inherit: inherit;
+
+  --color-ink: #10141f;          /* primary text */
+  --color-ink-soft: #4e5566;     /* secondary text, captions */
+
+  --color-midnight: #151a28;     /* buttons, dark band, the brand fill */
+  --color-midnight-lo: #e3e6ec;  /* tinted section bands, hover states */
+
+  --color-pewter: #8892a6;       /* STRUCTURAL ONLY - rules, inactive. Never text. */
+  --color-pewter-lo: #edeff3;    /* the service-card surface, metadata chips */
+
+  --color-brass: #8a6e3c;        /* SEMANTIC ONLY - verification, the focus ring */
+  --color-brass-lo: #f3ede1;     /* accent surface */
+
+  --color-paper: #f4f5f7;        /* page background */
+  --color-surface: #ffffff;      /* cards, form fields */
+  --color-line: #dadee5;         /* hairline dividers and card edges */
+
+  --color-positive: #2f6f4e;
+  --color-positive-lo: #e9f2ed;
+  --color-attention: #b4541c;
+  --color-attention-lo: #f8ece2;
+  --color-critical: #9b2c2c;
+  --color-critical-lo: #f9ecec;
+
+  /* --- accessibility-derived stops ---------------------------------------
+   * Four darker stops the palette needs to meet the WCAG 2.1 AA it claims.
+   * Each is derived from a hue already in the system, never invented.
+   *
+   *   brass at #8a6e3c measures 4.40:1 on --paper: right for a mark or the
+   *   focus ring, short of the 4.5:1 that text owes, so brass TEXT takes -text.
+   *
+   *   pewter at #8892a6 measures 2.87:1 on --paper. The design uses it for
+   *   13px metadata, which is not large text and still owes 4.5:1, so that
+   *   text takes -text and pewter is held to non-text structure.
+   *
+   *   --line at 1.24:1 is a divider. WCAG 1.4.11 asks 3:1 of anything that
+   *   bounds a control, so inputs and checkboxes take -strong.
+   *
+   *   attention on its own tint measures 4.47:1, three hundredths short.
+   * ---------------------------------------------------------------------- */
+  --color-brass-text: #6b5426;
+  --color-pewter-text: #3b4252;
+  --color-pewter-strong: #79849b;
+  --color-attention-text: #a34914;
+
+  /* --- the accent family ------------------------------------------------
+   * Blue is the second semantic colour this revision introduces, and the
+   * split with brass is the load-bearing part: brass means verified, blue
+   * means actionable. They never appear on the same element.
+   *
+   *   accent is the only hue that carries meaning in the body of the page -
+   *   step numbers, inclusion ticks, the active nav link. 6.96:1 on white
+   *   and 6.38:1 on paper, so it is safe as text as well as as a mark.
+   *
+   *   navy is the primary fill. Near-black rather than saturated, so a page
+   *   with eight accent ticks on it still has exactly one loudest button.
+   * -------------------------------------------------------------------- */
+  --color-accent: #3056a7;
+  --color-accent-deep: #22417f;
+  --color-navy: #000b33;
+  --color-navy-hover: #001a5c;
+
+  /* The booking flow's blue. Deeper than accent, and the one blue that carries
+     white text: 9.23:1 on white, 12.21:1 for blue-deep. It fills the primary
+     action inside the flow and tops the hero gradient. */
+  --color-blue: #1a4199;
+  --color-blue-deep: #0d2f7d;
+
+  /* --- the gradient hero -------------------------------------------------
+   * The one place this design spends saturated colour. Stops are taken from
+   * the import verbatim; they resolve to white so the section below needs no
+   * divider. Not decoration: it is the single bold moment on the page, and
+   * everything under it stays neutral.
+   * ---------------------------------------------------------------------- */
+  --color-sky-1: #2b4f9e;
+  --color-sky-2: #33579f;
+  --color-sky-3: #43649f;
+  --color-sky-4: #5b7cb8;
+  --color-sky-5: #8ba7d4;
+  --color-sky-6: #cfdef0;
+  --color-sky-deep: #0b3b91;   /* the blurred orb behind the headline */
+  --color-sky-warm: #e8d8c0;   /* the warm orb, low left */
+
+  /* --- typography -------------------------------------------------------- */
+  --font-*: initial;
+  --font-display: "Newsreader", "Noto Sans Devanagari", "Noto Sans Gujarati", Georgia, serif;
+  --font-sans: "Instrument Sans", "Noto Sans Devanagari", "Noto Sans Gujarati", system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+
+  --font-weight-*: initial;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* Base body is 17px, not 16px. A meaningful share of readers are 60+, which
+     makes this a functional requirement rather than a preference. */
+  --text-*: initial;
+  --text-display: clamp(2.375rem, 6.4vw, 3.875rem);  /* 38 -> 62px, the hero */
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: -0.04em;
+  --text-h1: clamp(1.875rem, 3.8vw, 3rem);           /* 30 -> 48px */
+  --text-h1--line-height: 1.06;
+  --text-h1--letter-spacing: -0.035em;
+  --text-h2: clamp(1.875rem, 3.4vw, 2.5rem);         /* 30 -> 40px */
+  --text-h2--line-height: 1.08;
+  --text-h2--letter-spacing: -0.035em;
+  --text-h3: 1.375rem;                                /* 22px */
+  --text-h3--line-height: 1.3;
+  /* The large serif price on a service card. */
+  --text-price: clamp(1.875rem, 2.6vw, 2.375rem);    /* 30 -> 38px */
+  --text-price--line-height: 1.05;
+  --text-price--letter-spacing: -0.03em;
+
+  --text-body-lg: 1.1875rem;                          /* 19px */
+  --text-body-lg--line-height: 1.6;
+  --text-body: 1.0625rem;                             /* 17px */
+  --text-body--line-height: 1.65;
+  --text-small: 0.9375rem;                            /* 15px */
+  --text-small--line-height: 1.5;
+  --text-meta: 0.8125rem;                             /* 13px */
+  --text-meta--line-height: 1.5;
+
+  --text-admin-lg: 1.0625rem;
+  --text-admin-lg--line-height: 1.5;
+  --text-admin: 0.9375rem;
+  --text-admin--line-height: 1.5;
+  --text-admin-sm: 0.8125rem;
+  --text-admin-sm--line-height: 1.45;
+
+  /* --- space ------------------------------------------------------------- */
+  --spacing: 0.5rem;
+
+  /* --- shape ------------------------------------------------------------- */
+  /* Rounded again, and hierarchical rather than uniform: the pill is for
+     actions, 24px for a service card, 8px for a person, 40px for the coverage
+     panel's top corners. */
+  --radius-*: initial;
+  --radius-control: 8px;
+  --radius-card: 8px;
+  --radius-panel: 16px;
+  --radius-feature: 24px;
+  --radius-media: 40px;
+  --radius-pill: 9999px;
+
+  /* --- elevation ---------------------------------------------------------
+   * The floating header is glass: a translucent fill, a heavy backdrop blur,
+   * and inset highlights along the top and bottom edges that read as a lit
+   * rim. That rim is what stops it looking like a flat grey bar.
+   * ---------------------------------------------------------------------- */
+  --shadow-*: initial;
+  --shadow-glass:
+    0 6px 24px rgba(16, 20, 31, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+  --shadow-glass-lifted:
+    0 10px 32px rgba(16, 20, 31, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.22);
+  --shadow-panel: 0 10px 30px -18px rgba(16, 20, 31, 0.5);
+
+  /* --- motion ------------------------------------------------------------
+   * Three easings and five durations is the entire vocabulary. A sixth means
+   * a component is wrong.
+   * ---------------------------------------------------------------------- */
+  --ease-*: initial;
+  --ease-signature: cubic-bezier(0.16, 1, 0.3, 1);      /* expo-out */
+  --ease-reveal: cubic-bezier(0.215, 0.61, 0.355, 1);   /* cubic-out */
+  --ease-state: cubic-bezier(0.2, 0, 0.2, 1);
+  --ease-float: cubic-bezier(0.37, 0, 0.63, 1);         /* the drifting pills */
+
+  /* Durations are plain custom properties, not a Tailwind namespace, because
+     Tailwind has no --duration-* namespace. Write duration-(--dur-state) at
+     the call site: a bare duration-state silently generates nothing. */
+  --dur-hover: 150ms;
+  --dur-state: 220ms;
+  --dur-panel: 320ms;
+  --dur-reveal: 600ms;
+  --dur-signature: 900ms;
+
+  /* --- breakpoints ------------------------------------------------------- */
+  --breakpoint-*: initial;
+  --breakpoint-sm: 480px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Base layer
+ * ------------------------------------------------------------------------- */
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --page-gutter: 24px;
+    --container-max: 1296px;
+  }
+
+  @media (min-width: 768px) {
+    :root {
+      --page-gutter: 48px;
+    }
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    /* 300, not 400. The lightness of the display face is most of this theme's
+       character, and it is the first thing lost if a heading inherits 400. */
+    font-weight: var(--font-weight-normal);
+    color: var(--color-ink);
+    text-wrap: balance;
+  }
+
+  p, li {
+    text-wrap: pretty;
+  }
+
+  /* 2px brass, 2px offset. Brass is the only colour in this palette that
+     clears 3:1 against both the light surfaces and the midnight band, which is
+     measured rather than assumed: 4.40 on paper, 3.62 on midnight.
+
+     Over the gradient hero it would not, so the hero sets --ring to white. */
+  :root {
+    --ring: var(--color-brass);
+  }
+
+  [data-surface='sky'] {
+    --ring: #ffffff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  ::selection {
+    background-color: var(--color-brass-lo);
+    color: var(--color-ink);
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+
+  img, video {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Structural utilities
+ * ------------------------------------------------------------------------- */
+
+@utility container-page {
+  width: 100%;
+  max-width: calc(var(--container-max) + var(--page-gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--page-gutter);
+}
+
+/* Section rhythm: 64px mobile, 112px desktop. This spacing is what makes the
+   design feel unhurried, and it is the first thing that gets compressed under
+   pressure. It is not compressed. */
+@utility section-y {
+  padding-block: 4rem;
+}
+
+@utility section-y-sm {
+  padding-block: 3rem;
+}
+
+/* Body copy line length caps at 68 characters. */
+@utility measure {
+  max-width: 68ch;
+}
+
+@utility measure-tight {
+  max-width: 54ch;
+}
+
+@utility skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+}
+
+@media (min-width: 768px) {
+  .section-y {
+    padding-block: 7rem;
+  }
+
+  .section-y-sm {
+    padding-block: 4.5rem;
+  }
+}
+
+.skip-link:focus {
+  left: var(--page-gutter);
+  top: 0.5rem;
+}
+
+/* Guarantees a 48x48 hit area without forcing the visual box to be that big. */
+.tap-target {
+  position: relative;
+}
+
+.tap-target::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  min-width: 48px;
+  min-height: 48px;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------------------------------------------------------------------------
+ * Motion
+ *
+ * Every piece of decorative motion carries a data-motion attribute. That is
+ * what makes the reduced-motion opt-out below explicit and greppable, instead
+ * of relying on a blanket rule that would also kill the spinner telling someone
+ * their booking is being sent.
+ * ------------------------------------------------------------------------- */
+
+@keyframes line-rise {
+  from { translate: 0 100%; }
+  to { translate: 0 0; }
+}
+
+@keyframes row-in {
+  from { opacity: 0; translate: 0 var(--row-rise, 12px); }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes panel-wipe {
+  from { clip-path: inset(0 0 100% 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+/* The locality pills drifting over the coverage gradient. Slow, tiny, and
+   each on its own delay so they never move in step. */
+@keyframes pill-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -12px; }
+}
+
+[data-motion='float'] {
+  animation: pill-float 9s var(--ease-float) infinite both;
+}
+
+@keyframes marquee-track {
+  from { translate: 0 0; }
+  to { translate: -50% 0; }
+}
+
+/* Booking step transitions. The panel arrives from 8px below, in both
+   directions. It is replacing its own content rather than navigating, so a
+   long or side-to-side travel would overstate what happened. --dur-panel
+   rather than the 280ms the brief names: 280 would be a sixth duration, and
+   the vocabulary is capped at five. */
+@keyframes step-in {
+  from { opacity: 0; translate: 0 8px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+[data-motion='step'] {
+  animation: step-in var(--dur-panel) var(--ease-reveal) both;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; translate: 0 0.5rem; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+/* Text rising from behind a mask: the wrapper clips, the child moves. */
+[data-motion='hero'],
+[data-motion='mask'] {
+  display: block;
+  overflow: hidden;
+}
+
+[data-motion='hero'] > *,
+[data-motion='mask'] > * {
+  display: block;
+  animation: line-rise var(--dur-reveal) var(--ease-signature) both;
+}
+
+[data-motion='hero'] > * {
+  animation-duration: 820ms;
+}
+
+/* Staggered rows. The per-row delay is set at the call site. */
+[data-motion='row'] {
+  animation: row-in 500ms var(--ease-reveal) both;
+}
+
+/* The signature wipe: a panel arriving from its own top edge. */
+[data-motion='wipe'] {
+  animation: panel-wipe var(--dur-signature) var(--ease-signature) both;
+}
+
+/* Section entrance. At most three sections on the home page, and nothing
+   anywhere else - applying it to every block is the clearest signature of
+   generated design there is. */
+[data-motion='reveal'] {
+  opacity: 0;
+  translate: 0 10%;
+  transition:
+    opacity var(--dur-reveal) var(--ease-reveal),
+    translate var(--dur-reveal) var(--ease-reveal);
+}
+
+[data-motion='reveal'][data-revealed] {
+  opacity: 1;
+  translate: 0 0;
+}
+
+[data-motion='marquee'] {
+  animation: marquee-track var(--marquee-duration, 40s) linear infinite;
+}
+
+[data-motion='marquee'][data-paused] {
+  animation-play-state: paused;
+}
+
+/* ---------------------------------------------------------------------------
+ * Mobile
+ *
+ * Section entrances are off below 768px: scroll-linked motion on a mid-range
+ * Android costs frames and gains nothing. The signature sequence stays, since
+ * it sits on the conversion path, but runs at 80% of its desktop timing.
+ * ------------------------------------------------------------------------- */
+
+@media (max-width: 767px) {
+  :root {
+    --dur-state: 176ms;
+    --dur-panel: 256ms;
+    --dur-reveal: 480ms;
+    --dur-signature: 720ms;
+  }
+
+  [data-motion='reveal'] {
+    opacity: 1;
+    translate: 0 0;
+    transition: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Reduced motion
+ *
+ * Non-essential motion is REMOVED, not shortened. Zeroing the duration tokens
+ * covers every transition; the mask, wipe and marquee need explicit opt-outs,
+ * because a keyframe does not degrade gracefully from a duration change alone -
+ * it just snaps to its end state.
+ *
+ * Deliberately NOT disabled: spinners and progress bars. Those are not
+ * decoration, they are the system saying it is working, and a booking being
+ * submitted with no sign of life is worse than a moving spinner.
+ * ------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-hover: 0ms;
+    --dur-state: 0ms;
+    --dur-panel: 0ms;
+    --dur-reveal: 0ms;
+    /* A plain opacity swap rather than nothing, so the result still reads as
+       having arrived. */
+    --dur-signature: 150ms;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  [data-motion='hero'] > *,
+  [data-motion='mask'] > *,
+  [data-motion='row'],
+  [data-motion='step'],
+  [data-motion='float'],
+  [data-motion='marquee'] {
+    animation: none !important;
+    translate: none !important;
+    opacity: 1 !important;
+  }
+
+  [data-motion='wipe'] {
+    animation: none !important;
+    clip-path: none !important;
+  }
+
+  [data-motion='reveal'] {
+    opacity: 1 !important;
+    translate: none !important;
+    transition: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * The photographic service card.
+ *
+ * No commissioned photography exists yet, so this is the solid-surface variant
+ * the design specifies: same geometry, same content structure, same slide, an
+ * icon where the photograph will go. Dropping an image in later changes the
+ * top of the card and nothing else.
+ *
+ * The price and the action slide up over the foot of the card rather than
+ * sitting in reserved space, so there is no empty band at rest. That is a
+ * fine-pointer affordance only: a coarse pointer has no hover, and a two-tap
+ * reveal would strand the button behind a tap that reads as "open the card".
+ * On touch the raised state IS the resting state.
+ * ------------------------------------------------------------------------- */
+
+.pcard {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-feature);
+  background: rgba(255, 255, 255, 0.62);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  box-shadow:
+    0 26px 56px -34px rgba(16, 20, 31, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.pcard-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 24px 22px 22px;
+}
+
+.pcard-rule {
+  height: 1px;
+  background: rgba(21, 26, 40, 0.16);
+}
+
+/* Without this the grid child refuses to shrink and the slide leaves a gap. */
+.pcard-reveal-in {
+  min-height: 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pcard-reveal {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    padding: 30px 22px 22px;
+    background: linear-gradient(
+      to bottom,
+      rgba(247, 249, 252, 0) 0%,
+      rgba(247, 249, 252, 0.94) 26%,
+      #f7f9fc 52%
+    );
+    translate: 0 100%;
+    opacity: 0;
+    transition:
+      translate 420ms var(--ease-signature),
+      opacity var(--dur-panel) ease-out;
+  }
+
+  .pcard:hover .pcard-reveal,
+  .pcard:focus-within .pcard-reveal {
+    translate: 0 0;
+    opacity: 1;
+    transition-duration: 620ms, 460ms;
+  }
+}
+
+/* The reveal is decorative. The information inside it is not, so reduced
+   motion returns it to the flow rather than hiding it. */
+@media (prefers-reduced-motion: reduce) {
+  .pcard-reveal {
+    position: static !important;
+    translate: none !important;
+    opacity: 1 !important;
+    background: none !important;
+    padding: 0 !important;
+    transition: none !important;
+  }
+}
+
+/* Ring layers. padding + mask-composite paints the gradient as a 1px border
+   only, so the card keeps its translucent fill instead of being covered by
+   the gradient. Two stacked rings cross-fade on hover. */
+.pcard::before,
+.pcard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.pcard::before {
+  z-index: 2;
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.5) 38%,
+    rgba(48, 86, 167, 0.18) 100%
+  );
+}
+
+.pcard::after {
+  z-index: 2;
+  opacity: 0;
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(48, 86, 167, 0.7) 42%,
+    rgba(34, 65, 127, 0.95) 100%
+  );
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pcard::before,
+  .pcard::after {
+    transition: opacity 520ms var(--ease-signature);
+  }
+
+  .pcard:hover::after,
+  .pcard:focus-within::after {
+    opacity: 1;
+  }
+
+  .pcard:hover::before,
+  .pcard:focus-within::before {
+    opacity: 0;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * The estimator price.
+ *
+ * Two identical keyframes alternating on a counter, because re-triggering the
+ * same animation on the same element does nothing - the browser sees no change.
+ * Swapping between a and b restarts it on every recalculation.
+ * ------------------------------------------------------------------------- */
+
+@keyframes price-a {
+  from { opacity: 0; filter: blur(6px); translate: 0 8px; }
+  to { opacity: 1; filter: blur(0); translate: 0 0; }
+}
+
+@keyframes price-b {
+  from { opacity: 0; filter: blur(6px); translate: 0 8px; }
+  to { opacity: 1; filter: blur(0); translate: 0 0; }
+}
+
+[data-motion='price-a'] { animation: price-a 380ms var(--ease-reveal) both; }
+[data-motion='price-b'] { animation: price-b 380ms var(--ease-reveal) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-motion='price-a'],
+  [data-motion='price-b'] {
+    animation: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * The closing call to action.
+ *
+ * The only gradient-filled button on the site, so it gets the only brightness
+ * hover. The arrow travels 5px, which is the same distance the service card's
+ * arrow moves: one gesture, used twice, rather than two similar ones.
+ * ------------------------------------------------------------------------- */
+
+.ctarow {
+  transition:
+    filter var(--dur-state) var(--ease-state),
+    background-color var(--dur-state) var(--ease-state);
+}
+
+.ctarow:hover {
+  filter: brightness(1.06);
+}
+
+.ctaarrow {
+  transition: translate var(--dur-panel) var(--ease-signature);
+}
+
+.ctarow:hover .ctaarrow {
+  translate: 5px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ctaarrow {
+    transition: none;
+    translate: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * The booking flow.
+ *
+ * A form someone fills in while a relative is being discharged. Every control
+ * is bigger than the marketing equivalent, the focus ring is the flow's blue
+ * rather than brass (brass is for verification, and there is none here), and
+ * nothing moves except the panel arriving.
+ * ------------------------------------------------------------------------- */
+
+[data-surface='form'] {
+  --ring: var(--color-blue);
+}
+
+/* Text inputs, textareas and the date field. Hover states the boundary, focus
+   states it harder and adds a 3px halo, which is what makes the focused field
+   findable on a long form without moving anything. */
+.fld {
+  transition:
+    border-color 180ms var(--ease-state),
+    box-shadow 180ms var(--ease-state);
+}
+
+.fld:hover {
+  border-color: var(--color-pewter);
+}
+
+.fld:focus {
+  border-color: var(--color-blue);
+  box-shadow: 0 0 0 3px rgba(26, 65, 153, 0.14);
+  outline: none;
+}
+
+/* Option pills and radio cards. Colour only - no lift, no scale. */
+.opt {
+  transition:
+    background-color var(--dur-hover) var(--ease-state),
+    border-color var(--dur-hover) var(--ease-state),
+    color var(--dur-hover) var(--ease-state);
+}
+
+

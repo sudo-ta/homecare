@@ -1,0 +1,9 @@
+/* Fonts first so @font-face is registered before anything paints. */
+@import './styles/fonts.css';
+
+@import 'tailwindcss';
+@import '@homecare/shared/theme.css';
+
+/* The UI primitives live in the shared workspace, so Tailwind has to scan
+   there too or their classes get tree-shaken out of the stylesheet. */
+@source '../../shared/src';

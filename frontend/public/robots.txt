@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Post-submission screens carry a reference number and nothing useful without
+# the state that put it there. They are noindex in the markup too.
+Disallow: /book/confirmation
+Disallow: /partner/confirmation
+
+# The operations portal. Not public, and the API authorises every request
+# server-side regardless of what is listed here.
+Disallow: /admin
+
+Sitemap: http://localhost:5183/sitemap.xml
