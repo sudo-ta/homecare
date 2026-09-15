@@ -98,14 +98,14 @@
    * divider. Not decoration: it is the single bold moment on the page, and
    * everything under it stays neutral.
    * ---------------------------------------------------------------------- */
-  --color-sky-1: #2b4f9e;
-  --color-sky-2: #33579f;
-  --color-sky-3: #43649f;
-  --color-sky-4: #5b7cb8;
-  --color-sky-5: #8ba7d4;
-  --color-sky-6: #cfdef0;
-  --color-sky-deep: #0b3b91;   /* the blurred orb behind the headline */
-  --color-sky-warm: #e8d8c0;   /* the warm orb, low left */
+  --color-sky-1: #1a4199;
+  --color-sky-2: #24489b;
+  --color-sky-3: #33559f;
+  --color-sky-4: #4d6cad;
+  --color-sky-5: #7591c3;
+  --color-sky-6: #a9bedc;
+  --color-sky-deep: #0d2f7d;   /* the blurred orb behind the headline */
+  --color-sky-warm: #f2ddc6;   /* the warm orb, low left */
 
   /* --- typography -------------------------------------------------------- */
   --font-*: initial;
@@ -801,3 +801,50 @@
 }
 
 
+
+/* ---------------------------------------------------------------------------
+ * Filled actions and the article card.
+ *
+ * `.btn` is the one brightness hover in the system, for buttons whose fill is
+ * already the loudest thing in their block and which have nowhere darker to go.
+ *
+ * `.card` is the article card. It is the single exception to "never shadow a
+ * card on hover": these are links to somewhere else rather than panels of
+ * content, and the lift is what says so. Nothing else on the site does this.
+ * ------------------------------------------------------------------------- */
+
+.btn {
+  transition:
+    background-color var(--dur-state) var(--ease-state),
+    filter var(--dur-state) var(--ease-state);
+}
+
+.btn:hover {
+  filter: brightness(1.08);
+}
+
+.card {
+  transition:
+    border-color var(--dur-state) var(--ease-state),
+    box-shadow var(--dur-state) var(--ease-state);
+}
+
+.card:hover {
+  border-color: #b3bcc8;
+  box-shadow: 0 22px 44px -30px rgba(16, 20, 31, 0.35);
+}
+
+.arw {
+  transition: translate var(--dur-panel) var(--ease-signature);
+}
+
+.card:hover .arw {
+  translate: 5px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arw {
+    transition: none;
+    translate: none !important;
+  }
+}

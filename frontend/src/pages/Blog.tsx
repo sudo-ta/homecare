@@ -1,37 +1,26 @@
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { brand } from '@shared/brand.js';
-import {
-  Card,
-  CardBody,
-  CardLinkOverlay,
-  EmptyState,
-  Pagination,
-  Skeleton,
-  SkeletonGroup,
-} from '@shared/ui/index.js';
+import { EmptyState, Pagination, Skeleton, SkeletonGroup } from '@shared/ui/index.js';
 import { cn } from '@shared/utils/index.js';
-import { Section, SectionHeading } from '@/components/Section.js';
+import { PageHero } from '@/components/SkyHero.js';
 import { Seo, breadcrumbSchema } from '@/components/Seo.js';
 import { getArticles } from '@/lib/api.js';
-import { formatDateShort } from '@/lib/format.js';
 import { useApi } from '@/lib/useApi.js';
 
 const PER_PAGE = 6;
+const ALL = 'all';
 
 export default function Blog() {
   const { data, loading } = useApi(getArticles, []);
   const [params, setParams] = useSearchParams();
-  const category = params.get('category') ?? 'all';
+  const category = params.get('category') ?? ALL;
   const [page, setPage] = useState(Number(params.get('page') ?? 1));
 
-  const categories = useMemo(
-    () => ['all', ...new Set((data ?? []).map((a) => a.category))],
-    [data],
-  );
+  const categories = useMemo(() => [ALL, ...new Set((data ?? []).map((a) => a.category))], [data]);
 
   const filtered = useMemo(
-    () => (data ?? []).filter((a) => category === 'all' || a.category === category),
+    () => (data ?? []).filter((a) => category === ALL || a.category === category),
     [data, category],
   );
 
@@ -41,7 +30,7 @@ export default function Blog() {
 
   function pickCategory(next: string) {
     const p = new URLSearchParams(params);
-    if (next === 'all') p.delete('category');
+    if (next === ALL) p.delete('category');
     else p.set('category', next);
     p.delete('page');
     setParams(p, { replace: true });
@@ -71,87 +60,106 @@ export default function Blog() {
         ]}
       />
 
-      <Section spacing="tight">
-        <SectionHeading
-          as="h2"
-          title={<span className="text-h1">Articles</span>}
-          intro="Written for the person arranging care at short notice, who needs a practical answer tonight."
-        />
-      </Section>
+      <PageHero
+        crumb="Articles"
+        title="What families ask us, written down properly"
+        intro="Practical notes from the coordinators and nurses who do this work. Nothing here replaces advice from your own doctor."
+      />
 
-      <Section spacing="tight" className="!pt-0">
-        {categories.length > 1 ? (
-          <div role="group" aria-label="Filter by category" className="flex flex-wrap gap-0.5 border-y border-line py-2">
-            {categories.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => pickCategory(c)}
-                aria-pressed={category === c}
-                className={cn(
-                  'rounded-pill border px-1.5 py-1 text-small transition-colors duration-(--dur-state) ease-state',
-                  category === c
-                    ? 'border-ink bg-ink text-paper'
-                    : 'border-pewter-strong bg-surface text-ink hover:border-ink hover:text-ink',
-                )}
-              >
-                {c === 'all' ? 'Everything' : c}
-              </button>
-            ))}
+      <section className="bg-surface">
+        <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-[clamp(1.375rem,3vw,2rem)] px-(--page-gutter) pt-[clamp(2rem,5vw,3.5rem)] pb-[clamp(3.25rem,7vw,6rem)]">
+          <div className="flex flex-wrap items-center justify-between gap-1.75">
+            <div role="group" aria-label="Filter by topic" className="flex flex-wrap gap-1">
+              {categories.map((c) => {
+                const selected = c === category;
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => pickCategory(c)}
+                    aria-pressed={selected}
+                    className={cn(
+                      'opt tap-target cursor-pointer rounded-pill border px-2 py-1.25 text-small whitespace-nowrap',
+                      selected
+                        ? 'border-blue bg-blue font-medium text-surface'
+                        : 'border-line bg-surface text-pewter-text',
+                    )}
+                  >
+                    {c === ALL ? 'All topics' : c}
+                  </button>
+                );
+              })}
+            </div>
+
+            <p aria-live="polite" className="text-small text-pewter-text">
+              {filtered.length === 1 ? '1 article' : `${filtered.length} articles`}
+            </p>
           </div>
-        ) : null}
 
-        <div className="mt-3">
           {loading ? (
-            <SkeletonGroup label="Loading articles" className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
+            <SkeletonGroup
+              label="Loading articles"
+              className="grid gap-[clamp(1rem,2.2vw,1.375rem)] [grid-template-columns:repeat(auto-fill,minmax(300px,1fr))]"
+            >
               {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} shape="card" className="h-[15rem]" />
+                <Skeleton key={i} className="h-[15rem]" />
               ))}
             </SkeletonGroup>
           ) : shown.length === 0 ? (
             <EmptyState title="Nothing published in this category yet">
-              Try another category, or read everything from the start.
+              Try another topic, or read everything by clearing the filter.
             </EmptyState>
           ) : (
-            <>
-              <ul className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-                {shown.map((a) => (
-                  <li key={a.slug}>
-                    <Card interactive className="h-full">
-                      <CardBody className="flex h-full flex-col gap-1.5">
-                        <p className="text-small text-ink-soft">
-                          {a.category} &middot; {a.readingMinutes} min read
-                        </p>
-                        <h2 className="text-h3">
-                          <Link to={`/blog/${a.slug}`} className="text-ink hover:text-ink">
-                            {a.title}
-                            <CardLinkOverlay />
-                          </Link>
-                        </h2>
-                        <p className="flex-1 text-body text-ink-soft">{a.excerpt}</p>
-                        <p className="text-small text-ink-soft">
-                          {a.author} &middot; {formatDateShort(a.publishedAt)}
-                        </p>
-                      </CardBody>
-                    </Card>
-                  </li>
-                ))}
-              </ul>
+            <ul className="grid gap-[clamp(1rem,2.2vw,1.375rem)] [grid-template-columns:repeat(auto-fill,minmax(300px,1fr))]">
+              {shown.map((a) => (
+                <li key={a.slug} className="flex">
+                  <article className="card relative flex flex-1 flex-col gap-1.5 rounded-[22px] border border-line bg-surface p-[clamp(1.25rem,2.6vw,1.625rem)]">
+                    <span className="flex flex-wrap items-baseline gap-1.25">
+                      <span className="font-sans text-meta font-semibold tracking-[.12em] text-blue uppercase">
+                        {a.category}
+                      </span>
+                      <span className="text-meta text-pewter-text">
+                        {a.readingMinutes} min read
+                      </span>
+                    </span>
 
-              {totalPages > 1 ? (
-                <div className="mt-4 flex justify-center">
-                  <Pagination
-                    page={safePage}
-                    totalPages={totalPages}
-                    onPageChange={goToPage}
-                    buildHref={(n) => (n === 1 ? '/blog' : `/blog?page=${n}`)}
-                  />
-                </div>
-              ) : null}
-            </>
+                    <h2 className="text-[clamp(1.25rem,2vw,1.5rem)] leading-[1.16] tracking-[-.018em]">
+                      <Link to={`/blog/${a.slug}`} className="text-ink no-underline">
+                        {a.title}
+                        {/* Stretches the link over the whole card, so the card is
+                            one tab stop rather than a div with an onClick. */}
+                        <span className="absolute inset-0" />
+                      </Link>
+                    </h2>
+
+                    <p className="flex-1 text-small leading-[1.55] text-ink-soft">{a.excerpt}</p>
+
+                    <span className="inline-flex items-center gap-1 text-small font-medium text-pewter-text">
+                      Read the article
+                      <svg
+                        viewBox="0 0 20 20"
+                        className="arw size-2"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.7"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="M4.17 10h11.66M15.83 10 10 4.17M15.83 10 10 15.83" />
+                      </svg>
+                    </span>
+                  </article>
+                </li>
+              ))}
+            </ul>
           )}
+
+          {totalPages > 1 ? (
+            <Pagination page={safePage} totalPages={totalPages} onPageChange={goToPage} />
+          ) : null}
         </div>
-      </Section>
+      </section>
     </>
   );
 }

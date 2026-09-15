@@ -22,6 +22,10 @@ import { getProfessionals, getServices } from '@/lib/api.js';
 import { useFirstVisitThisSession } from '@/lib/motion.js';
 import { useApi } from '@/lib/useApi.js';
 
+/** Sections resolve to white at both ends, so consecutive bands need no divider. */
+const BAND =
+  'bg-[linear-gradient(to_bottom,#fff_0%,#f6f8fc_12%,#eaeff8_34%,#e4ebf6_64%,#f4f6fa_88%,#fff_100%)]';
+
 export default function Home() {
   return (
     <>
@@ -39,13 +43,11 @@ export default function Home() {
       </Reveal>
 
       <HowItWorks />
+      <Pricing />
 
       <Reveal>
         <CareTeam />
       </Reveal>
-
-      <Pricing />
-      <Coverage />
 
       <Reveal>
         <ClosingCta />
@@ -75,7 +77,7 @@ function Hero() {
 
   return (
     <SkyHero className="-mt-11.5 pt-11.5">
-      <div className="container-page relative flex flex-col items-center pt-[clamp(4.5rem,12vw,10.5rem)] pb-[clamp(7.5rem,14vw,12.25rem)]">
+      <div className="container-page relative flex flex-col items-center pt-[clamp(8rem,18vw,17.875rem)] pb-[clamp(7.75rem,14vw,13rem)]">
         <div className="flex w-full max-w-[780px] flex-col items-center gap-[clamp(1.125rem,2.4vw,1.75rem)] text-center">
           <h1 className="text-display text-surface">
             <span className="block overflow-hidden" data-motion={motion}>
@@ -102,17 +104,14 @@ function Hero() {
                 : undefined
             }
           >
-            Nurses, caregivers, physiotherapists and doctors who come to your house. You see who is
-            coming, and what it costs, before you book.
+            You see who is coming, and the rate, before you book.
           </p>
 
-          {/* PincodeCheck carries its own <label for>, so there is no heading
-              here: a second one would be unassociated and read twice. */}
-          <div id="book" className="w-full max-w-[560px] scroll-mt-12.5 text-left">
+          {/* PincodeCheck carries its own label, so there is no heading here. */}
+          <div id="book" className="w-full max-w-[318px] scroll-mt-12.5 text-left">
             <PincodeCheck source="hero_check" variant="sky" />
-            <p className="mt-1.75 text-center text-meta text-surface/95">
-              {activeAreas().length} localities across {cities.join(' and ')}. Try 380009, 382350 or
-              390007.
+            <p className="mx-auto mt-1.75 max-w-[34ch] text-center text-meta text-surface/95">
+              {activeAreas().length} localities across {cities.join(' and ')}
             </p>
           </div>
         </div>
@@ -123,26 +122,11 @@ function Hero() {
 
 /* ---------------------------------------------------------------------- */
 
-/**
- * The tinted band gradients.
- *
- * Each section resolves to white at both ends, so consecutive bands need no
- * divider between them - there is no seam to hide. The blue is far enough
- * down the tint that the glass cards sitting on it still read as lighter than
- * their ground, which is what makes them look lit rather than pasted on.
- */
-const BAND_SERVICES =
-  'bg-[linear-gradient(to_bottom,#fff_0%,#f6f8fc_12%,#eaeff8_34%,#e4ebf6_64%,#f4f6fa_88%,#fff_100%)]';
-const BAND_STEPS =
-  'bg-[linear-gradient(to_bottom,#fff_0%,#e9eff8_30%,#e3ebf6_62%,#f2f5fa_88%,#fff_100%)]';
-const BAND_TEAM =
-  'bg-[linear-gradient(to_bottom,#fff_0%,#e9eff8_24%,#e3ebf6_58%,#f0f4fa_86%,#fff_100%)]';
-
 function Services() {
   const { data, loading, error, reload } = useApi(getServices, []);
 
   return (
-    <section id="services" className={cn('scroll-mt-12', BAND_SERVICES)}>
+    <section id="services" className={cn('scroll-mt-12', BAND)}>
       <div className="container-page section-y">
         <SectionHeading
           title="What we do"
@@ -239,103 +223,46 @@ const STEPS = [
 ];
 
 /**
- * The numerals are set large in the display face and in the accent, which is
- * the one place a number is decoration rather than data. They are aria-hidden
- * because the list is already an ordered list: a screen reader announcing
- * "zero one, one, Tell us what you need" reads the count twice.
+ * How it works.
+ *
+ * A list with hairline rules rather than four cards. The steps are sequential
+ * and read in order, and a row carries that better than a grid of equals.
+ *
+ * The numerals are aria-hidden: this is an ordered list, so a screen reader
+ * announcing "zero one, one, Tell us what you need" reads the count twice.
  */
 function HowItWorks() {
   return (
-    <section className={BAND_STEPS}>
-      <div className="container-page section-y">
-        <div className="flex max-w-[56ch] flex-col gap-1.25">
-          <h2 className="text-h2">How it works</h2>
-          <p className="text-body-lg text-ink-soft">
+    <section className="bg-surface">
+      <div className="mx-auto w-full max-w-[1240px] px-(--page-gutter) section-y">
+        <div className="flex max-w-[46ch] flex-col gap-1.25">
+          <span className="font-sans text-meta font-semibold tracking-[.18em] text-brass-text uppercase">
+            How it works
+          </span>
+          <h2 className="text-[clamp(1.875rem,3.6vw,2.75rem)] leading-[1.06] tracking-[-.035em]">
             Four steps, and a named person answerable at each one.
-          </p>
+          </h2>
         </div>
 
-        <ol className="mt-[clamp(1.625rem,3.5vw,2.5rem)] grid gap-2.5 [grid-template-columns:repeat(auto-fit,minmax(248px,1fr))]">
+        <ol className="mt-[clamp(1.75rem,4vw,3rem)] flex flex-col">
           {STEPS.map((step) => (
             <li
               key={step.n}
-              className="flex flex-col gap-1.75 rounded-feature border border-[rgba(255,255,255,.85)] bg-[rgba(255,255,255,.62)] px-3 pt-3.25 pb-3.5 shadow-[0_26px_56px_-34px_rgba(16,20,31,.4),inset_0_1px_0_rgba(255,255,255,.9)] backdrop-blur-[22px] backdrop-saturate-[180%]"
+              className="grid items-baseline gap-1 gap-x-[clamp(1.5rem,4vw,3.5rem)] border-t border-line py-[clamp(1.375rem,3vw,2.125rem)] md:[grid-template-columns:auto_minmax(220px,1fr)_minmax(0,1.1fr)]"
             >
               <span
                 aria-hidden="true"
-                className="font-display text-[2.75rem] leading-[.9] tracking-[-.04em] text-accent"
+                className="font-display text-[clamp(2.125rem,4vw,3.25rem)] leading-[.9] tracking-[-.04em] tabular-nums text-blue/26"
               >
                 {step.n}
               </span>
-              <span aria-hidden="true" className="h-px bg-[rgba(21,26,40,.14)]" />
-              <h3 className="text-h3">{step.title}</h3>
-              <p className="text-small text-ink-soft">{step.body}</p>
+              <h3 className="text-[clamp(1.25rem,2.1vw,1.5625rem)] leading-[1.16] tracking-[-.02em]">
+                {step.title}
+              </h3>
+              <p className="text-body leading-[1.6] text-ink-soft">{step.body}</p>
             </li>
           ))}
         </ol>
-      </div>
-    </section>
-  );
-}
-
-/* ---------------------------------------------------------------------- */
-
-function CareTeam() {
-  const { data, loading } = useApi(getProfessionals, []);
-  const shown = data?.slice(0, 3) ?? [];
-
-  return (
-    <section id="team" className={cn('scroll-mt-12', BAND_TEAM)}>
-      <div className="container-page section-y">
-        <SectionHeading
-          title="The people who would come"
-          intro="You are deciding whether to let a stranger into your house. These are the checks we run before anyone reaches a patient."
-          aside={
-            <Link to="/professionals" className={buttonClasses('secondary', 'md')}>
-              See the whole team
-            </Link>
-          }
-        />
-
-        <div className="mt-[clamp(1.625rem,3.5vw,2.5rem)]">
-          {loading ? (
-            <SkeletonGroup
-              label="Loading the care team"
-              className="grid gap-2.5 [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]"
-            >
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} shape="feature" className="h-[26rem]" />
-              ))}
-            </SkeletonGroup>
-          ) : shown.length === 0 ? (
-            <EmptyState
-              title="Profiles are being published"
-              action={
-                <Link to="/partner" className={buttonClasses('secondary', 'md')}>
-                  Join the network
-                </Link>
-              }
-            >
-              We are not showing profiles here until every person on the page has agreed to appear.
-              Call a coordinator and we will tell you exactly who would be assigned to your booking.
-            </EmptyState>
-          ) : (
-            <>
-              <ul className="grid gap-2.5 [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]">
-                {shown.map((p) => (
-                  <li key={p.id} className="flex">
-                    <TeamCard professional={p} />
-                  </li>
-                ))}
-              </ul>
-              <p className="measure mt-2.5 text-meta text-pewter-text">
-                Placeholder people. These are served only while the demo content flag is on, so the
-                layout and the verification badge can be reviewed before real, consented
-                professionals exist.
-              </p>
-            </>
-          )}
-        </div>
       </div>
     </section>
   );
@@ -355,24 +282,14 @@ const INCLUDED = [
  * What it costs.
  *
  * The full comparison table lives on /services, where a column has the width
- * for it. What belongs on the home page is the thing a table cannot do: let
- * someone set the two variables that actually move a quote and watch the
- * figure respond.
- *
- * The section is painted by a radial that rises from the bottom edge, so the
- * estimator sits in the light part and the blue is behind the fold of the
- * block rather than under the numbers.
+ * for it. What belongs here is the thing a table cannot do: let someone set the
+ * two variables that actually move a quote and watch the figure respond.
  */
 function Pricing() {
   const { data, loading } = useApi(getServices, []);
 
   return (
-    <section id="pricing" className="relative scroll-mt-12 overflow-hidden bg-surface">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,#fff_0%,#fff_30%,rgba(255,255,255,.9)_44%,rgba(255,255,255,.5)_58%,rgba(255,255,255,0)_72%,rgba(255,255,255,0)_84%,rgba(255,255,255,.55)_93%,#fff_100%),radial-gradient(128%_104%_at_50%_104%,#fff_30%,#93adda_66%,var(--color-accent)_96%)]"
-      />
-
+    <section id="pricing" className={cn('relative scroll-mt-12 overflow-hidden', BAND)}>
       <div className="relative container-page section-y">
         <div className="grid items-center gap-[clamp(1.5rem,4vw,3.5rem)] [grid-template-columns:repeat(auto-fit,minmax(300px,1fr))]">
           <div className="flex flex-col gap-1.75">
@@ -389,7 +306,7 @@ function Pricing() {
                 <li key={item} className="flex items-start gap-1.5">
                   <span
                     aria-hidden="true"
-                    className="mt-[3px] grid size-[19px] shrink-0 place-items-center rounded-pill bg-accent"
+                    className="mt-[3px] grid size-[19px] shrink-0 place-items-center rounded-pill bg-blue"
                   >
                     <svg
                       viewBox="0 0 24 24"
@@ -430,70 +347,58 @@ function Pricing() {
 
 /* ---------------------------------------------------------------------- */
 
-/**
- * The coverage panel.
- *
- * A gradient rounded at the top only, so it reads as rising out of the page
- * rather than sitting on it. The city pills carry a real count each, taken from
- * the coverage data rather than written down, so a locality added to the
- * catalogue changes this number without anyone editing the page.
- */
-function Coverage() {
-  const areas = activeAreas();
-  const cities = launchedCities();
-
-  const counts = cities.map((c) => {
-    const n = areas.filter((a) => a.citySlug === c.slug).length;
-    return { slug: c.slug, name: c.name, label: `${n} ${n === 1 ? 'locality' : 'localities'}` };
-  });
+function CareTeam() {
+  const { data, loading } = useApi(getProfessionals, []);
+  const shown = data?.slice(0, 3) ?? [];
 
   return (
-    <section id="coverage" className="scroll-mt-12 bg-surface">
-      <div className="container-page pt-[clamp(3rem,6vw,5rem)]">
-        <div className="relative overflow-hidden rounded-t-media bg-[linear-gradient(to_bottom,var(--color-sky-1)_0%,var(--color-sky-2)_46%,#3d5da3_72%,var(--color-sky-4)_86%,#a9c0e2_95%,#fff_100%)]">
-          <div className="relative flex flex-col items-center gap-2.25 px-[clamp(1.25rem,5vw,3rem)] pt-[clamp(3.5rem,9vw,7.25rem)] pb-[clamp(4.5rem,11vw,9.25rem)] text-center">
-            <h2 className="max-w-[22ch] text-h1 text-surface">Care, in your part of town</h2>
-
-            <p className="max-w-[62ch] text-body-lg text-surface">
-              {areas.length} localities across {cities.map((c) => c.name).join(' and ')} are staffed
-              today. If we cannot cover an address properly, we say so rather than sending someone
-              who will not arrive.
-            </p>
-
-            <Link
-              to="/coverage"
-              className={cn(
-                buttonClasses('primary', 'lg'),
-                'mt-1 gap-1.25 bg-surface text-midnight hover:bg-midnight-lo',
-              )}
-            >
-              Check your pincode
-              <svg
-                viewBox="0 0 24 24"
-                className="size-2.5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.75"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
+    <section id="team" className="scroll-mt-12 bg-surface">
+      <div className="container-page section-y">
+        <SectionHeading
+          title="The people who would come"
+          intro="You are deciding whether to let a stranger into your house. These are the checks we run before anyone reaches a patient."
+          aside={
+            <Link to="/professionals" className={buttonClasses('secondary', 'md')}>
+              See the whole team
             </Link>
+          }
+        />
 
-            <ul className="mt-2.25 flex flex-wrap justify-center gap-1.25">
-              {counts.map((c) => (
-                <li
-                  key={c.slug}
-                  className="flex items-baseline gap-[9px] rounded-pill bg-surface/92 px-2.5 py-1.25 whitespace-nowrap"
-                >
-                  <span className="text-small text-ink">{c.name}</span>
-                  <span className="text-meta text-pewter-text">{c.label}</span>
-                </li>
+        <div className="mt-[clamp(1.625rem,3.5vw,2.625rem)]">
+          {loading ? (
+            <SkeletonGroup label="Loading the care team" className="flex flex-col gap-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-[9rem]" />
               ))}
-            </ul>
-          </div>
+            </SkeletonGroup>
+          ) : shown.length === 0 ? (
+            <EmptyState
+              title="Profiles are being published"
+              action={
+                <Link to="/partner" className={buttonClasses('secondary', 'md')}>
+                  Join the network
+                </Link>
+              }
+            >
+              We are not showing profiles here until every person on the page has agreed to appear.
+              Call a coordinator and we will tell you exactly who would be assigned to your booking.
+            </EmptyState>
+          ) : (
+            <>
+              <ul className="flex flex-col">
+                {shown.map((p) => (
+                  <li key={p.id}>
+                    <TeamCard professional={p} />
+                  </li>
+                ))}
+              </ul>
+              <p className="measure mt-2.5 text-meta text-pewter-text">
+                Placeholder people. These are served only while the demo content flag is on, so the
+                layout and the verification badge can be reviewed before real, consented
+                professionals exist.
+              </p>
+            </>
+          )}
         </div>
       </div>
     </section>
@@ -502,32 +407,25 @@ function Coverage() {
 
 /* ---------------------------------------------------------------------- */
 
-const CTA_POINTS = [
-  'No payment upfront',
-  'No account to create',
-  'Profile shared before booking',
-];
+const CTA_POINTS = ['No payment upfront', 'No account to create', 'Profile shared before booking'];
 
 /**
  * The closing call to action.
  *
- * Light rather than the dark band the previous revision used. The blue rises
- * from the bottom of the viewport and the type sits in the white above it, so
- * the page ends on the same gradient it opened with instead of on a slab.
+ * The page ends on the same blue it opened with, but travelling the other way:
+ * white at the top, deepening to the accent at the base, where the footer picks
+ * the same stop up and carries it down to navy. The two are one gradient split
+ * across a section boundary.
  */
 function ClosingCta() {
   return (
     <section className="relative overflow-hidden bg-surface">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_130%_at_50%_118%,#fff_32%,#a9c0e2_68%,var(--color-accent)_100%)]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-[22%] bg-[linear-gradient(to_bottom,#fff_0%,rgba(255,255,255,.7)_46%,rgba(255,255,255,0)_100%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,#fff_0%,#fbfcfe_8%,#f4f7fc_17%,#eaf0f9_27%,#dde7f5_38%,#ccdbef_49%,#b8cbe8_59%,#a1b8de_68%,#89a4d3_76%,#7090c6_83%,#5878b8_89%,#436aac_95%,var(--color-accent)_100%)]"
       />
 
-      <div className="relative mx-auto flex w-full max-w-[820px] flex-col items-center gap-[clamp(1rem,2vw,1.375rem)] px-(--page-gutter) pt-[clamp(4.5rem,10vw,8rem)] pb-[clamp(5rem,11vw,8.75rem)] text-center">
+      <div className="relative mx-auto flex w-full max-w-[760px] flex-col items-center gap-[clamp(1rem,2vw,1.375rem)] px-(--page-gutter) pt-[clamp(4.5rem,10vw,8rem)] pb-[clamp(5rem,11vw,8.75rem)] text-center">
         <span className="font-sans text-meta font-semibold tracking-[.18em] text-brass-text uppercase">
           Ready when you are
         </span>
@@ -536,53 +434,64 @@ function ClosingCta() {
           Tell us who needs care, and we will take it from there.
         </h2>
 
-        <p className="max-w-[52ch] text-body-lg text-ink-soft">
+        <p className="max-w-[52ch] text-[clamp(1rem,1.5vw,1.125rem)] leading-[1.55] text-ink-soft">
           Four short questions, or one phone call. A coordinator calls back
           {brand.callbackMinutes ? ` within ${brand.callbackMinutes} minutes` : ' shortly'} with a
           named professional and a firm rate.
         </p>
 
-        <div className="mt-0.75 flex flex-col items-center gap-1.75">
+        <div className="mt-0.75 flex flex-wrap items-start justify-center gap-x-1.5 gap-y-1.75">
           <Link
             to="/book"
-            className="ctarow inline-flex h-7.5 items-center gap-[11px] rounded-pill bg-[linear-gradient(to_top,var(--color-accent-deep),var(--color-accent))] px-4.25 text-body font-medium text-surface no-underline shadow-[0_18px_40px_-18px_rgba(48,86,167,.95)]"
+            className="ctarow inline-flex h-7.75 items-center gap-2 rounded-pill bg-surface pr-1 pl-3.75 text-[1.09375rem] font-medium tracking-[-.005em] text-blue-deep no-underline shadow-[0_18px_40px_-20px_rgba(13,47,125,.45),inset_0_0_0_1px_rgba(13,47,125,.08)]"
           >
             Request care
-            <svg
-              viewBox="0 0 20 20"
-              className="ctaarrow size-[19px] shrink-0"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+            <span
               aria-hidden="true"
+              className="grid size-5.75 shrink-0 place-items-center rounded-pill bg-blue"
             >
-              <path d="M4.17 10h11.66M15.83 10 10 4.17M15.83 10 10 15.83" />
-            </svg>
+              <svg
+                viewBox="0 0 20 20"
+                className="ctaarrow size-2.25"
+                fill="none"
+                stroke="#fff"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M4.17 10h11.66M15.83 10 10 4.17M15.83 10 10 15.83" />
+              </svg>
+            </span>
           </Link>
 
-          <p className="text-small text-ink-soft">
-            or call{' '}
+          <div className="flex flex-col items-center gap-1.25">
             <a
               href={telHref()}
               data-analytics="closing-cta-call"
-              className="font-medium text-ink underline underline-offset-[3px]"
+              className="ctarow inline-flex h-6.75 items-center gap-1.25 rounded-pill border border-[rgba(13,47,125,.32)] bg-transparent px-3.25 text-[1.03125rem] font-medium text-blue-deep no-underline"
             >
+              <svg
+                viewBox="0 0 16 16"
+                className="size-[15px] shrink-0"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M3.7 1.5a1.3 1.3 0 0 1 1.8.3l1.2 1.7a1.3 1.3 0 0 1-.2 1.7l-.7.6a8 8 0 0 0 3.4 3.4l.6-.7a1.3 1.3 0 0 1 1.7-.2l1.7 1.2a1.3 1.3 0 0 1 .3 1.8l-.8 1.1a2 2 0 0 1-2.3.7C7.6 12 4 8.4 2.6 4.6a2 2 0 0 1 .7-2.3l.4-.8Z" />
+              </svg>
               {brand.contact.phoneDisplay}
             </a>
-            , answered 24 hours
-          </p>
+            <p className="text-small text-pewter-text">Answered 24 hours, by a coordinator</p>
+          </div>
         </div>
 
-        <ul className="mt-[clamp(1.125rem,3vw,1.875rem)] flex flex-wrap justify-center gap-x-3.5 gap-y-1.25">
+        <ul className="mt-[clamp(1.5rem,3.5vw,2.375rem)] flex flex-wrap justify-center gap-x-3.75 gap-y-1.5 border-t border-[rgba(16,20,31,.14)] pt-2.5">
           {CTA_POINTS.map((point) => (
             <li key={point} className="inline-flex items-center gap-1 text-small text-pewter-text">
               <svg
                 viewBox="0 0 24 24"
                 className="size-[15px] shrink-0"
                 fill="none"
-                stroke="var(--color-accent)"
+                stroke="var(--color-accent-deep)"
                 strokeWidth="2.6"
                 strokeLinecap="round"
                 strokeLinejoin="round"

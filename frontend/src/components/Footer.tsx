@@ -1,23 +1,21 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
-import { brand, launchedCities, telHref } from '@shared/brand.js';
-import { activeServices } from '@/content/services.js';
+import { brand, telHref } from '@shared/brand.js';
 
 /**
  * Footer.
  *
- * A navy band with a single blue glow behind the top-left corner, which is what
- * stops a large dark area reading as a dead slab. Everything else in it is
- * type.
+ * A navy band that the closing section's gradient runs straight into: the top
+ * of the footer repeats the last stop of that gradient and fades to navy, so
+ * the seam between the two is not visible. One blue glow behind the top-left
+ * corner stops the dark area reading as a dead slab.
  *
- * Spec 6.7: every link resolves to a real page. There are no `#` anchors here,
- * and the service and city links are generated from the catalogue and the brand
- * file rather than hand-listed, so a service that is deactivated or a city that
- * has not launched cannot leave a dead link behind. links.test.ts enforces it.
+ * Spec 6.7: every link resolves to a real page. There are no `#` placeholders,
+ * and the service links are generated from the catalogue rather than
+ * hand-listed, so a deactivated service cannot leave a dead link behind.
+ * links.test.ts enforces both that and the set of destinations below.
  */
 export function Footer() {
-  const services = activeServices().slice(0, 6);
-  const cities = launchedCities();
   const social = Object.entries(brand.social).filter(([, href]) => Boolean(href)) as [
     string,
     string,
@@ -27,12 +25,15 @@ export function Footer() {
     <footer className="relative overflow-hidden bg-navy text-surface">
       <div
         aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[clamp(11.25rem,26vw,18.75rem)] bg-[linear-gradient(to_bottom,var(--color-accent)_0%,#2a4d9a_12%,var(--color-accent-deep)_26%,#193465_42%,#112650_58%,#0a1a44_74%,#04123a_88%,rgba(0,11,51,0)_100%)]"
+      />
+      <div
+        aria-hidden="true"
         className="pointer-events-none absolute -top-[55%] -left-[8%] h-[min(760px,90vh)] w-[min(1000px,110vw)] rounded-pill blur-[70px] bg-[radial-gradient(circle,rgba(48,86,167,.6)_0%,rgba(48,86,167,0)_68%)]"
       />
 
-      <div className="relative container-page pt-[clamp(3.25rem,7vw,5.5rem)] pb-[clamp(1.5rem,3vw,2rem)]">
-        <div className="grid gap-[clamp(1.75rem,4vw,3rem)] [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
-          {/* --- the brand column ------------------------------------------ */}
+      <div className="relative mx-auto w-full max-w-[1240px] px-(--page-gutter) pt-[clamp(3.25rem,7vw,5.5rem)] pb-[clamp(1.5rem,3vw,2rem)]">
+        <div className="grid gap-[clamp(1.75rem,4vw,3rem)] sm:grid-cols-2 min-[900px]:grid-cols-[1.5fr_repeat(3,minmax(0,1fr))]">
           <div className="flex flex-col gap-2">
             <span className="font-display text-h2 text-surface">{brand.name}</span>
 
@@ -47,74 +48,69 @@ export function Footer() {
               {brand.contact.phoneDisplay}
             </a>
 
-            <p className="inline-flex items-center gap-1 text-meta text-surface/60">
-              {/* Positive, not accent: this is a status, and the one green dot
-                  on the page should not be mistaken for a brand colour. */}
+            <p className="inline-flex items-center gap-1 text-meta text-surface/62">
               <span aria-hidden="true" className="size-[7px] rounded-pill bg-[#6ee7a8]" />
               Coordinators answer 24 hours
             </p>
           </div>
 
-          <FooterNav id="footer-services" title="Services">
-            {services.map((s) => (
-              <li key={s.slug}>
-                <FooterLink to={`/services/${s.slug}`}>{s.name}</FooterLink>
-              </li>
-            ))}
+          <FooterNav id="footer-care" title="Care">
             <li>
-              <FooterLink to="/services">All services</FooterLink>
-            </li>
-          </FooterNav>
-
-          <FooterNav id="footer-company" title="Company">
-            <li>
-              <FooterLink to="/about">About</FooterLink>
+              <FooterLink to="/services">Services</FooterLink>
             </li>
             <li>
               <FooterLink to="/professionals">Our care team</FooterLink>
             </li>
             <li>
-              <FooterLink to="/partner">Join the network</FooterLink>
+              <FooterLink to="/#pricing">What it costs</FooterLink>
             </li>
             <li>
-              <FooterLink to="/careers">Careers</FooterLink>
+              <FooterLink to="/coverage">Areas served</FooterLink>
+            </li>
+          </FooterNav>
+
+          <FooterNav id="footer-start" title="Get started">
+            <li>
+              <FooterLink to="/book">Request care</FooterLink>
+            </li>
+            <li>
+              <a
+                href={telHref()}
+                className="text-small text-surface/82 no-underline transition-colors duration-(--dur-hover) ease-state hover:text-surface"
+              >
+                Speak to a coordinator
+              </a>
             </li>
             <li>
               <FooterLink to="/contact">Contact</FooterLink>
             </li>
             <li>
-              <FooterLink to="/blog">Articles</FooterLink>
+              <FooterLink to="/coverage">Check your pincode</FooterLink>
+            </li>
+            <li>
+              <FooterLink to="/partner">Join the network</FooterLink>
             </li>
           </FooterNav>
 
-          <FooterNav id="footer-coverage" title="Areas served">
-            {cities.map((c) => (
-              <li key={c.slug}>
-                <FooterLink to={`/home-nursing-${c.slug}`}>Home nursing in {c.name}</FooterLink>
-              </li>
-            ))}
+          <FooterNav id="footer-reading" title="Reading">
             <li>
-              <FooterLink to="/coverage">All localities</FooterLink>
+              <FooterLink to="/blog">Articles</FooterLink>
+            </li>
+            <li>
+              <FooterLink to="/about">About</FooterLink>
+            </li>
+            <li>
+              <FooterLink to="/careers">Careers</FooterLink>
             </li>
           </FooterNav>
         </div>
 
-        {/* --- contact and legal ------------------------------------------- */}
-        <div className="mt-[clamp(2.25rem,5vw,3.75rem)] flex flex-wrap items-start justify-between gap-x-3 gap-y-2 border-t border-surface/14 pt-2.75">
-          <address className="text-meta text-surface/60 not-italic">
-            <a
-              href={`mailto:${brand.contact.email}`}
-              className="text-surface/82 underline underline-offset-2"
-            >
-              {brand.contact.email}
-            </a>
-            <br />
-            {brand.contact.address.line1}, {brand.contact.address.line2}
-            <br />
-            {brand.contact.address.city} {brand.contact.address.pincode}
-          </address>
+        <div className="mt-[clamp(2.25rem,5vw,3.75rem)] flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1.25 border-t border-surface/14 pt-2.75">
+          <span className="text-meta text-surface/62">
+            &copy; {new Date().getFullYear()} {brand.legalName}
+          </span>
 
-          <ul className="flex flex-wrap gap-x-2.5 gap-y-1">
+          <ul className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
             <li>
               <FooterLink to="/terms">Terms of service</FooterLink>
             </li>
@@ -137,35 +133,19 @@ export function Footer() {
           </ul>
         </div>
 
-        <div className="mt-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-          <span className="text-meta text-surface/60">
-            &copy; {new Date().getFullYear()} {brand.legalName}
-          </span>
-          <span className="text-meta text-surface/60">
-            Terms and privacy are pending legal review
-          </span>
-        </div>
-
-        {/* The page says out loud that its contact details are not real. That is
-            worth more than a plausible number nobody can call. */}
-        <p className="mt-1.25 max-w-[70ch] text-meta text-surface/42">
-          Brand name, phone number and address are placeholders held in the brand file, not real
-          contact details.
+        {/* The page says out loud that its contact details are not real, and
+            that the legal pages have not been reviewed. Both are worth more
+            than a plausible placeholder nobody questions. */}
+        <p className="mt-1.25 max-w-[70ch] text-meta leading-[1.5] text-surface/62">
+          Terms and privacy are pending legal review. Brand name, phone number, address and email
+          are placeholders held in the brand file, not real contact details.
         </p>
       </div>
     </footer>
   );
 }
 
-function FooterNav({
-  id,
-  title,
-  children,
-}: {
-  id: string;
-  title: string;
-  children: ReactNode;
-}) {
+function FooterNav({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <nav aria-labelledby={id} className="flex flex-col gap-1.75">
       <h2

@@ -64,6 +64,7 @@ export function PincodeCheck({ source, variant = 'inline', className }: PincodeC
   const [result, setResult] = useState<CoverageResult | null>(null);
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [focused, setFocused] = useState(false);
   const labelId = useId();
 
   /** The value the visible panel came from, used as its React key. */
@@ -124,42 +125,70 @@ export function PincodeCheck({ source, variant = 'inline', className }: PincodeC
           of gravity and removing it leaves a hole. */}
       {variant === 'sky' ? (
         <div className="flex flex-col gap-1.5">
-          <label htmlFor={labelId} className="text-small font-medium text-surface">
-            Check whether we cover your area
+          {/* The label is for screen readers only. The field is 318px wide in
+              the middle of the hero with one obvious action beside it, and a
+              visible label above it competes with the headline. */}
+          <label htmlFor={labelId} className="sr-only">
+            Check whether we cover your area. Enter a six-digit pincode.
           </label>
 
-          {/* The glass pill. A translucent fill over a blur, holding a solid
-              white field - the contrast between the two is what makes it read
-              as a control rather than as decoration. */}
-          <form
-            onSubmit={onSubmit}
-            noValidate
-            className="flex flex-wrap items-center gap-1 rounded-pill border border-[rgba(255,255,255,.42)] bg-[rgba(255,255,255,.2)] p-1 backdrop-blur-[10px]"
-          >
+          {/* The action sits inside the field rather than beside it, so the
+              whole control is one pill. The placeholder carries the invitation
+              while the field is empty and swaps to the format once focused. */}
+          <form onSubmit={onSubmit} noValidate className="relative flex">
             <input
               id={labelId}
               name="pincode"
               inputMode="numeric"
               autoComplete="postal-code"
               maxLength={6}
-              placeholder="Pincode, six digits"
+              placeholder={focused ? 'Pincode, six digits' : 'Check your area'}
               value={pincode}
               aria-invalid={error ? true : undefined}
               aria-describedby="pincode-answer"
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
               onChange={(e) => {
-                setPincode(e.target.value.replace(/D/g, ''));
+                setPincode(e.target.value.replace(/\D/g, ''));
                 if (error) setError(null);
               }}
-              className="h-6 min-w-0 flex-1 basis-[190px] rounded-pill border border-transparent bg-surface px-2.5 text-body text-ink placeholder:text-ink-soft"
+              className="h-7 w-full rounded-pill border border-transparent bg-surface pr-[62px] pl-3 text-body text-ink placeholder:text-ink-soft"
             />
-            <Button type="submit" size="md" loading={checking} loadingLabel="Checking your area">
-              Check my area
-            </Button>
+            <button
+              type="submit"
+              aria-label="Check my area"
+              title="Check my area"
+              disabled={checking}
+              className="absolute top-[5px] right-[5px] grid size-5.75 cursor-pointer place-items-center rounded-pill border-0 bg-blue text-surface transition-colors duration-(--dur-state) ease-state hover:bg-blue-deep"
+            >
+              {checking ? (
+                <>
+                  <span
+                    aria-hidden="true"
+                    className="size-2 animate-spin rounded-pill border-2 border-[rgba(255,255,255,.35)] border-t-surface"
+                  />
+                  <span role="status" className="sr-only">
+                    Checking your area
+                  </span>
+                </>
+              ) : (
+                <svg
+                  viewBox="0 0 20 20"
+                  className="size-[19px]"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M4.17 10h11.66M15.83 10 10 4.17M15.83 10 10 15.83" />
+                </svg>
+              )}
+            </button>
           </form>
 
-          {error ? (
-            <p className="text-center text-small text-[#ffd9d4]">{error}</p>
-          ) : null}
+          {error ? <p className="text-center text-small text-[#ffd9d4]">{error}</p> : null}
         </div>
       ) : (
         <div
@@ -182,7 +211,7 @@ export function PincodeCheck({ source, variant = 'inline', className }: PincodeC
                   placeholder="380009"
                   value={pincode}
                   onChange={(e) => {
-                    setPincode(e.target.value.replace(/D/g, ''));
+                    setPincode(e.target.value.replace(/\D/g, ''));
                     if (error) setError(null);
                   }}
                   error={error ?? undefined}

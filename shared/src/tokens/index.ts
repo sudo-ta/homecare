@@ -61,14 +61,14 @@ export const colors = {
   blueDeep: '#0d2f7d',
 
   /* The gradient hero. The one saturated moment on the page. */
-  sky1: '#2b4f9e',
-  sky2: '#33579f',
-  sky3: '#43649f',
-  sky4: '#5b7cb8',
-  sky5: '#8ba7d4',
-  sky6: '#cfdef0',
-  skyDeep: '#0b3b91',
-  skyWarm: '#e8d8c0',
+  sky1: '#1a4199',
+  sky2: '#24489b',
+  sky3: '#33559f',
+  sky4: '#4d6cad',
+  sky5: '#7591c3',
+  sky6: '#a9bedc',
+  skyDeep: '#0d2f7d',
+  skyWarm: '#f2ddc6',
 } as const;
 
 export type ColorToken = keyof typeof colors;

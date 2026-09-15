@@ -2,29 +2,25 @@ import type { Professional } from '@shared/types/index.js';
 import { initials, roleLabel, years } from '@/lib/format.js';
 
 /**
- * A professional's profile card, as it appears on the home page.
+ * A professional, as a row on the home page.
  *
- * This is the single biggest trust lever on the page: a family is deciding
- * whether to let a stranger into the house. What makes it work is specificity -
- * a name, a real qualification, and a list of what was actually checked rather
- * than a decorative tick.
+ * A row rather than a card, because the bio is the part that earns trust and a
+ * card clamps it to three lines. Identity sits in the left column and the
+ * evidence in the right, so a reader scanning three people compares like with
+ * like down the page.
  *
- * The badge is a filled brass disc sitting against the name, because that is
- * the one place verification is being claimed and brass is the colour that
- * means it. The tick reverses out in white at 4.9:1. Brass is never spent
- * anywhere else on this card, so the mark keeps its meaning.
+ * The badge is a filled brass disc against the name: that is the one place
+ * verification is being claimed, and brass is the colour that means it. The
+ * checks beneath repeat the brass as small ticks, which is the only other place
+ * it appears here, so the mark keeps its meaning.
  *
  * The avatar is initials in the accent tint, not a photograph. No consented
- * photographs exist, and a stock face on a card that claims a real verified
- * person would be the worst possible thing to fake.
- *
- * Languages and working areas are deliberately not here: the home page card
- * carries what decides trust, and the full detail is on /professionals.
- * No contact details are ever rendered.
+ * photographs exist, and a stock face on a row claiming a verified person would
+ * be the worst possible thing to fake. No contact details are ever rendered.
  */
 export function TeamCard({ professional: p }: { professional: Professional }) {
   return (
-    <article className="flex flex-1 flex-col gap-2 rounded-feature border border-[rgba(255,255,255,.85)] bg-[rgba(255,255,255,.62)] p-3 pb-3 shadow-[0_26px_56px_-34px_rgba(16,20,31,.4),inset_0_1px_0_rgba(255,255,255,.9)] backdrop-blur-[22px] backdrop-saturate-[180%]">
+    <article className="grid items-start gap-2.25 gap-x-[clamp(1.75rem,4vw,3.5rem)] border-t border-[rgba(21,26,40,.14)] py-[clamp(1.5rem,3vw,2rem)] md:[grid-template-columns:minmax(240px,300px)_minmax(0,1fr)]">
       <div className="flex items-start gap-1.75">
         <span
           aria-hidden="true"
@@ -33,8 +29,8 @@ export function TeamCard({ professional: p }: { professional: Professional }) {
           {initials(p.fullName)}
         </span>
 
-        <div className="flex min-w-0 flex-col gap-[3px]">
-          <h3 className="flex items-center gap-1 text-h3">
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <h3 className="flex items-center gap-1 text-[1.5rem] leading-[1.14] tracking-[-.02em]">
             {p.fullName}
             <span className="grid size-[19px] shrink-0 place-items-center rounded-pill bg-brass">
               <span className="sr-only">Verified</span>
@@ -56,22 +52,25 @@ export function TeamCard({ professional: p }: { professional: Professional }) {
           <p className="text-small text-ink-soft">
             {roleLabel(p.role)} &middot; {years(p.experienceYears)}
           </p>
-          <p className="text-meta text-pewter-text">{p.qualification}</p>
+          <p className="text-meta leading-[1.45] text-pewter-text">{p.qualification}</p>
         </div>
       </div>
 
-      <p className="line-clamp-3 text-small text-ink-soft">{p.bio}</p>
+      <div className="flex flex-col gap-1.75">
+        <p className="max-w-[74ch] text-[.96875rem] leading-[1.6] text-ink-soft">{p.bio}</p>
 
-      <div className="mt-auto flex flex-col gap-1.25 border-t border-[rgba(21,26,40,.12)] pt-2.25">
-        <ul className="flex flex-col gap-[7px]">
+        <ul className="flex flex-wrap gap-x-2.5 gap-y-0.75">
           {p.verifiedChecks.map((c) => (
-            <li key={c} className="flex items-start gap-[9px] text-small text-ink-soft">
+            <li
+              key={c}
+              className="inline-flex items-center gap-[7px] text-meta whitespace-nowrap text-brass-text"
+            >
               <svg
                 viewBox="0 0 24 24"
-                className="mt-[3px] size-[15px] shrink-0"
+                className="size-[13px] shrink-0"
                 fill="none"
                 stroke="var(--color-brass)"
-                strokeWidth="2.6"
+                strokeWidth="3"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 aria-hidden="true"
