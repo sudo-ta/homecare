@@ -19,7 +19,7 @@ import { SkyHero } from '@/components/SkyHero.js';
 import { TeamCard } from '@/components/TeamCard.js';
 import { activeAreas } from '@/content/serviceAreas.js';
 import { getProfessionals, getServices } from '@/lib/api.js';
-import { useFirstVisitThisSession } from '@/lib/motion.js';
+import { useFirstVisitThisSession, useHeroSettle } from '@/lib/motion.js';
 import { useApi } from '@/lib/useApi.js';
 
 /** Sections resolve to white at both ends, so consecutive bands need no divider. */
@@ -72,12 +72,16 @@ export default function Home() {
  */
 function Hero() {
   const reveal = useFirstVisitThisSession('hero-revealed');
+  const settleRef = useHeroSettle();
   const motion = reveal ? 'hero' : undefined;
   const cities = launchedCities().map((c) => c.name);
 
   return (
     <SkyHero className="-mt-11.5 pt-11.5">
-      <div className="container-page relative flex flex-col items-center pt-[clamp(8rem,18vw,17.875rem)] pb-[clamp(7.75rem,14vw,13rem)]">
+      <div
+        ref={settleRef}
+        className="heroin container-page relative flex flex-col items-center pt-[clamp(8rem,18vw,17.875rem)] pb-[clamp(7.75rem,14vw,13rem)]"
+      >
         <div className="flex w-full max-w-[780px] flex-col items-center gap-[clamp(1.125rem,2.4vw,1.75rem)] text-center">
           <h1 className="text-display text-surface">
             <span className="block overflow-hidden" data-motion={motion}>

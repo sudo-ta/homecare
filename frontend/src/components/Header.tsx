@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
 import { brand, telHref } from '@shared/brand.js';
 import { cn } from '@shared/utils/index.js';
@@ -19,6 +19,12 @@ const NAV = [
 
 const isAnchor = (to: string) => to.includes('#');
 
+/** The intro hands over to the scroll painter at this point. */
+const OPEN_SEQUENCE_MS = 1980;
+
+/** Smoothstep, so the bar eases at both ends of the 120px travel. */
+const smoothstep = (p: number) => p * p * (3 - 2 * p);
+
 /**
  * The floating glass header.
  *
@@ -31,15 +37,66 @@ const isAnchor = (to: string) => to.includes('#');
  * already saturated. On every other page it is more opaque and the action is
  * filled blue, because a white pill on a white page is not an action.
  *
- * The backdrop blur is the expensive thing here, so it sits on one element that
- * never resizes and the compositor can cache it.
+ * On the home page it also opens: a small centred pill that widens into the
+ * full bar once the headline has finished rising, then narrows again with
+ * scroll. Elsewhere it is simply there.
  */
 export function Header() {
   const [open, setOpen] = useState(false);
+  const [opened, setOpened] = useState(false);
+  const barRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const onHome = location.pathname === '/';
 
   useEffect(() => setOpen(false), [location.pathname]);
+
+  /**
+   * The opening sequence plays on the home page only, and once. Everywhere else
+   * the bar is already in its resting state, so it starts there.
+   */
+  useEffect(() => {
+    if (!onHome || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setOpened(true);
+      return;
+    }
+    setOpened(false);
+    const timer = window.setTimeout(() => setOpened(true), OPEN_SEQUENCE_MS);
+    return () => window.clearTimeout(timer);
+  }, [onHome]);
+
+  /**
+   * Once open, width, height, shadow and the wordmark follow scroll position
+   * directly rather than through React state. A re-render per frame is what
+   * made the old CSS transition hitch at the start of the travel.
+   */
+  useEffect(() => {
+    const bar = barRef.current;
+    if (!onHome || !opened || !bar) return;
+
+    let frame = 0;
+    const paint = () => {
+      frame = 0;
+      const e = smoothstep(Math.min(1, Math.max(0, window.scrollY / 120)));
+      bar.style.maxWidth = `${(1120 - 240 * e).toFixed(1)}px`;
+      bar.style.height = `${(68 - 8 * e).toFixed(2)}px`;
+      bar.style.boxShadow =
+        `0 ${(6 + 4 * e).toFixed(1)}px ${(24 + 8 * e).toFixed(1)}px ` +
+        `rgba(16,20,31,${(0.1 + 0.06 * e).toFixed(3)}), inset 0 1px 0 rgba(255,255,255,.78)`;
+      const mark = bar.querySelector<HTMLElement>('.lg-mark');
+      if (mark) mark.style.fontSize = `${(23 - 3 * e).toFixed(2)}px`;
+    };
+
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(paint);
+    };
+
+    paint();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [onHome, opened]);
 
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : '';
@@ -62,22 +119,24 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 bg-transparent px-(--page-gutter) py-1.5">
       <div
+        ref={barRef}
         className={cn(
           'mx-auto flex h-8.5 w-full max-w-[1120px] items-center justify-between gap-2',
           'rounded-pill pr-1 pl-3 backdrop-blur-[14px] backdrop-saturate-[170%]',
           onHome
             ? 'border border-[rgba(255,255,255,.5)] bg-[rgba(255,255,255,.52)] shadow-[0_6px_24px_rgba(16,20,31,.1),inset_0_1px_0_rgba(255,255,255,.75)]'
             : 'border border-[rgba(255,255,255,.75)] bg-[rgba(255,255,255,.72)] shadow-[0_10px_32px_rgba(16,20,31,.14),inset_0_1px_0_rgba(255,255,255,.85)]',
+          onHome && (opened ? 'hdrdone' : 'hdr'),
         )}
       >
         <Link
           to="/"
-          className="shrink-0 font-display text-[1.4375rem] leading-none tracking-[-.02em] text-ink no-underline"
+          className="lg-mark shrink-0 font-display text-[1.4375rem] leading-none tracking-[-.02em] text-ink no-underline"
         >
           {brand.name}
         </Link>
 
-        <nav aria-label="Main" className="hidden min-w-0 overflow-hidden xl:block">
+        <nav aria-label="Main" className={cn("hidden min-w-0 overflow-hidden xl:block", onHome && "hdrrest")}>
           <ul className="flex items-center gap-3.75 whitespace-nowrap">
             {NAV.map((item) => (
               <li key={item.to} className="inline-flex items-center">
@@ -107,7 +166,7 @@ export function Header() {
           </ul>
         </nav>
 
-        <div className="flex items-center gap-0.75">
+        <div className={cn("flex items-center gap-0.75", onHome && "hdrrest")}>
           <a
             href={telHref()}
             data-analytics="header-call"

@@ -848,3 +848,97 @@
     translate: none !important;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * The header's opening sequence, home page only.
+ *
+ * The bar arrives as a small centred pill and widens into the full header once
+ * the hero headline has finished rising. It is the one piece of theatre on the
+ * site and it plays once per load, after which the bar is driven from scroll
+ * position instead.
+ *
+ * The 34% keyframe flips justify-content and the left padding partway through,
+ * so the wordmark is centred while the pill is small and settles to the left
+ * edge as it opens, rather than sliding the whole distance.
+ * ------------------------------------------------------------------------- */
+
+@keyframes bar-open {
+  from { max-width: 208px; justify-content: center; padding-left: 8px; }
+  34% { justify-content: space-between; padding-left: 24px; }
+  to { max-width: 1120px; justify-content: space-between; padding-left: 24px; }
+}
+
+@keyframes bar-rest {
+  from { opacity: 0; translate: 0 4px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+.hdr {
+  overflow: hidden;
+  animation: bar-open 820ms var(--ease-signature) 1100ms both;
+}
+
+/* After the intro hands over. max-width and height are layout properties, so
+   every scroll frame reflows the bar while the backdrop blur recomputes behind
+   it: will-change keeps it on its own layer. No transition, because the values
+   are interpolated per frame rather than stepped. */
+.hdrdone {
+  overflow: hidden;
+  will-change: max-width, height;
+  transition: none;
+}
+
+/* The nav and the actions fade in after the bar has finished widening, so they
+   do not stretch with it. */
+.hdrrest {
+  animation: bar-rest 420ms ease-out 1680ms both;
+}
+
+/* The hero recedes as the page scrolls: a small scale-down and fade rather than
+   a slide, so it reads as depth. Driven in JS rather than animation-timeline
+   for support, and off below 768px where it costs frames for nothing. */
+.heroin {
+  transform-origin: 50% 0;
+  will-change: transform, opacity;
+}
+
+/* The hero's pincode field carries its own drop shadow, which is what lifts it
+   off the gradient, and keeps it while focused so the ring adds rather than
+   replaces. */
+.pinwrap {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.pinwrap input {
+  box-shadow: 0 14px 34px -18px rgba(16, 20, 31, 0.5);
+  transition: box-shadow 200ms var(--ease-state);
+}
+
+.pinwrap input:focus,
+.pinwrap input:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(26, 65, 153, 0.28),
+    0 14px 34px -18px rgba(16, 20, 31, 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hdr,
+  .hdrrest {
+    animation: none !important;
+    opacity: 1 !important;
+    translate: none !important;
+  }
+
+  .hdrdone {
+    transition: none;
+  }
+
+  .heroin {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}

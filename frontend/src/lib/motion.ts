@@ -121,3 +121,50 @@ export function usePauseWhenOffscreen<T extends HTMLElement>(): {
 
   return { ref, paused: offscreen || hovered, setHovered };
 }
+
+/**
+ * The hero settle.
+ *
+ * The hero recedes as the page scrolls: a small scale-down, a lift and a fade
+ * over the first 70% of the viewport, so it reads as depth rather than as the
+ * block sliding away. Driven per frame in JS rather than with animation-timeline
+ * because support for that is still thin.
+ *
+ * Off under reduced motion and below 768px, where a scroll-linked transform on
+ * a full-bleed gradient costs frames on a mid-range Android and gains nothing.
+ */
+export function useHeroSettle(): React.RefObject<HTMLDivElement | null> {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia('(max-width: 767px)').matches) return;
+
+    let frame = 0;
+    const paint = () => {
+      frame = 0;
+      const span = window.innerHeight * 0.7;
+      const p = Math.min(1, Math.max(0, window.scrollY / span));
+      const eased = p * p * (3 - 2 * p);
+      el.style.transform = `scale(${(1 - eased * 0.055).toFixed(4)}) translateY(${(
+        -eased * 26
+      ).toFixed(2)}px)`;
+      el.style.opacity = (1 - eased * 0.55).toFixed(3);
+    };
+
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(paint);
+    };
+
+    paint();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  return ref;
+}
