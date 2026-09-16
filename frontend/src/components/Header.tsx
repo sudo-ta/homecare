@@ -26,6 +26,16 @@ const OPEN_SEQUENCE_MS = 1980;
 const smoothstep = (p: number) => p * p * (3 - 2 * p);
 
 /**
+ * Each variant's resting shadow. Scrolling deepens it by the same amounts from
+ * whichever base it starts at, so the inner pages keep their heavier edge
+ * rather than being flattened to the home page's.
+ */
+const RESTING_SHADOW = {
+  home: { y: 6, blur: 24, alpha: 0.1, inset: 0.78 },
+  inner: { y: 10, blur: 32, alpha: 0.14, inset: 0.85 },
+};
+
+/**
  * The floating glass header.
  *
  * Not a full-width bar: a pill inset from the edges, floating over whatever the
@@ -68,10 +78,16 @@ export function Header() {
    * Once open, width, height, shadow and the wordmark follow scroll position
    * directly rather than through React state. A re-render per frame is what
    * made the old CSS transition hitch at the start of the travel.
+   *
+   * This runs on every page, not just the home page. The inner-page designs
+   * draw a static bar, but a header that behaves differently depending on which
+   * route you are on reads as a bug rather than as a decision.
    */
   useEffect(() => {
     const bar = barRef.current;
-    if (!onHome || !opened || !bar) return;
+    if (!opened || !bar) return;
+
+    const shadow = onHome ? RESTING_SHADOW.home : RESTING_SHADOW.inner;
 
     let frame = 0;
     const paint = () => {
@@ -90,8 +106,9 @@ export function Header() {
       bar.style.maxWidth = `${(1120 - 240 * e).toFixed(1)}px`;
       bar.style.height = `${(68 - 8 * e).toFixed(2)}px`;
       bar.style.boxShadow =
-        `0 ${(6 + 4 * e).toFixed(1)}px ${(24 + 8 * e).toFixed(1)}px ` +
-        `rgba(16,20,31,${(0.1 + 0.06 * e).toFixed(3)}), inset 0 1px 0 rgba(255,255,255,.78)`;
+        `0 ${(shadow.y + 4 * e).toFixed(1)}px ${(shadow.blur + 8 * e).toFixed(1)}px ` +
+        `rgba(16,20,31,${(shadow.alpha + 0.06 * e).toFixed(3)}), ` +
+        `inset 0 1px 0 rgba(255,255,255,${shadow.inset})`;
       const mark = bar.querySelector<HTMLElement>('.lg-mark');
       if (mark) mark.style.fontSize = `${(23 - 3 * e).toFixed(2)}px`;
     };
@@ -136,7 +153,10 @@ export function Header() {
           onHome
             ? 'border border-[rgba(255,255,255,.5)] bg-[rgba(255,255,255,.52)] shadow-[0_6px_24px_rgba(16,20,31,.1),inset_0_1px_0_rgba(255,255,255,.75)]'
             : 'border border-[rgba(255,255,255,.75)] bg-[rgba(255,255,255,.72)] shadow-[0_10px_32px_rgba(16,20,31,.14),inset_0_1px_0_rgba(255,255,255,.85)]',
-          onHome && (opened ? 'hdrdone' : 'hdr'),
+          /* The opening animation is the home page's intro and plays once.
+             Everywhere else the bar starts in its resting state, but still
+             takes hdrdone so the scroll painter has its layer. */
+          onHome && !opened ? 'hdr' : 'hdrdone',
         )}
       >
         <Link
