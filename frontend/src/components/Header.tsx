@@ -76,7 +76,17 @@ export function Header() {
     let frame = 0;
     const paint = () => {
       frame = 0;
-      const e = smoothstep(Math.min(1, Math.max(0, window.scrollY / 120)));
+      const y = window.scrollY;
+
+      /* The bar loses 240px of width on scroll, which is more than the nav can
+         give up before it clips its last item. The phone number goes instead
+         and the icon stays, which is the same trade the narrow-viewport rule
+         makes. A 40/80 dead band stops it flickering around the threshold. */
+      const condensed = bar.hasAttribute('data-condensed');
+      if (y > 80 && !condensed) bar.setAttribute('data-condensed', '');
+      else if (y < 40 && condensed) bar.removeAttribute('data-condensed');
+
+      const e = smoothstep(Math.min(1, Math.max(0, y / 120)));
       bar.style.maxWidth = `${(1120 - 240 * e).toFixed(1)}px`;
       bar.style.height = `${(68 - 8 * e).toFixed(2)}px`;
       bar.style.boxShadow =
@@ -180,8 +190,10 @@ export function Header() {
             )}
           >
             <PhoneIcon />
-            <span className="hidden xl:inline">{brand.contact.phoneDisplay}</span>
-            <span className="sr-only xl:hidden">Call {brand.contact.phoneDisplay}</span>
+            <span className="tel-label hidden xl:inline">{brand.contact.phoneDisplay}</span>
+            {/* The number is decoration once the icon and the tel: link are
+                there, so hiding it never costs a screen reader the number. */}
+            <span className="sr-only">Call {brand.contact.phoneDisplay}</span>
           </a>
 
           <Link

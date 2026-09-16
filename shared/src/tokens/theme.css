@@ -942,3 +942,10 @@
     opacity: 1 !important;
   }
 }
+
+/* The header bar sheds 240px of width on scroll. The nav cannot give that up
+   without clipping its last item, so the phone number goes and the icon stays.
+   Same trade the design makes for narrow viewports, applied to the narrow bar. */
+[data-condensed] .tel-label {
+  display: none !important;
+}
